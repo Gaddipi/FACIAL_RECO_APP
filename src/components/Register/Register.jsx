@@ -11,7 +11,7 @@ class Register extends React.Component {
 		console.log(this.state);
 	}
 	onSubmitSignin = () => {
-		fetch("http://localhost:3000/register", {
+		fetch("https://shielded-reef-77697.herokuapp.com/register", {
 			method: "post",
 			headers: {
 				"Content-Type": "application/json",
@@ -19,16 +19,16 @@ class Register extends React.Component {
 			body: JSON.stringify({
 				email: this.state.email,
 				password: this.state.password,
-				name: this.state.name
-			})
+				name: this.state.name,
+			}),
 		})
-			.then(response => response.json())
-			.then(user => {
-				if(user){
-					this.props.loadUser(user)
-					this.props.onRouteChange('home')
+			.then((response) => response.json())
+			.then((user) => {
+				if (user.id) {
+					this.props.loadUser(user);
+					this.props.onRouteChange("home");
 				}
-			})
+			});
 		}
 
 	onNameChange = (event) => {

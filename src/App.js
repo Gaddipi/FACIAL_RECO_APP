@@ -10,9 +10,7 @@ import Signin from "./components/SignIn/Signin";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import Register from "./components/Register/Register";
 
-const app = new Clarifai.App({
-	apiKey: "09315c08d5704cad9205ef84b580ea01",
-});
+
 const particlesOptions = {
 	particles: {
 		number: {
@@ -26,24 +24,24 @@ const particlesOptions = {
 	url: "path/to/svg.svg",
 };
 
+const initialState = {
+	input: "",
+	imageUrl: "",
+	box: {},
+	route: "signin",
+	isSignedIn: false,
+	user: {
+		id: "",
+		name: "",
+		email: "",
+		entries: 0,
+		joined: "",
+	},
+};
 class App extends Component {
 	constructor() {
 		super();
-		this.state = {
-			input: "",
-			imageUrl: "",
-			box: {},
-			route: "signin",
-			isSignedIn: false,
-			user: {
-				id: "",
-				name: "",
-				email: "",
-				entries: 0,
-				joined: "",
-			},
-		};
-		console.log(this.state);
+		this.state = initialState;
 	}
 
 	loadUser = (data) => {
@@ -82,12 +80,17 @@ class App extends Component {
 
 	onButtonSubmit = () => {
 		this.setState({ imageUrl: this.state.input });
-		console.log(this.state);
-		app.models
-			.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
+		fetch("https://shielded-reef-77697.herokuapp.com/imageurl", {
+			method: "post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				input: this.state.input,
+			}),
+		})
+			.then((response) => response.json())
 			.then((response) => {
 				if (response) {
-					fetch("http://localhost:3000/image", {
+					fetch("https://shielded-reef-77697.herokuapp.com/image", {
 						method: "put",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({
@@ -96,12 +99,9 @@ class App extends Component {
 					})
 						.then((response) => response.json())
 						.then((count) => {
-							this.setState(
-								Object.assign(this.state.user, {
-									entries: count,
-								})
-							);
-						});
+							this.setState(Object.assign(this.state.user, { entries: count }));
+						})
+						.catch(console.log);
 				}
 				this.displayFaceBox(this.calculateFaceLocation(response));
 			})
@@ -110,7 +110,7 @@ class App extends Component {
 
 	onRouteChange = (route) => {
 		if (route === "signin") {
-			this.setState({ isSignedIn: false });
+			this.setState(initialState);
 		} else if (route === "home") {
 			this.setState({ isSignedIn: true });
 		}
